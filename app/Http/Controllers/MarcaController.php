@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Marca;
+use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
 
 class MarcaController extends Controller
@@ -28,7 +29,8 @@ class MarcaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $marca = Marca::create($request->all());
+        return $marca;
     }
 
     /**
