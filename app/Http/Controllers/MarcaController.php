@@ -37,6 +37,8 @@ class MarcaController extends Controller
      */
     public function store(Request $request)
     {
+        $request->validate($this->marca->rules(), $this->marca->feedback());
+
         $marca = $this->marca->create($request->all());
         return $marca;
     }
@@ -47,6 +49,9 @@ class MarcaController extends Controller
     public function show($id)
     {
         $marca = $this->marca->find($id);
+        if($marca === null) {
+            return response()->json(["erro" => "Impossível realizar a exibição, o recurso infomado não existe!"], 404);
+        }
         return $marca;
     }
 
@@ -64,6 +69,24 @@ class MarcaController extends Controller
     public function update(Request $request, $id)
     {
         $marca = $this->marca->find($id);
+        if($marca === null) {
+            return response()->json(["erro" => "Impossível realizar a atualização, o recurso infomado não existe!"], 404);
+        }
+
+        if($request->method() === 'PATCH'){
+            $regrasDinamicas = array();
+
+            foreach($this->marca->rules() as $input => $regra) {
+                if(array_key_exists($input, $request->all())) {
+                    $regrasDinamicas[$input] = $regra;
+                }
+            }
+            $request->validate($regrasDinamicas, $marca->feedback());
+        } else {
+            $request->validate($this->marca->rules(), $this->marca->feedback());
+        }
+        
+
         $marca->update($request->all());
         return $marca;
     }
@@ -74,6 +97,9 @@ class MarcaController extends Controller
     public function destroy($id)
     {
         $marca = $this->marca->find($id);
+        if($marca === null) {
+            return response()->json(["erro" => "Impossível realizar a exclusão, o recurso infomado não existe!"], 404);
+        }
         $marca->delete();
         return ['msg'=>'marca removida com sucesso!'];
     }
