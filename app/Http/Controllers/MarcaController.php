@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Marca;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class MarcaController extends Controller
 {
@@ -90,9 +91,20 @@ class MarcaController extends Controller
         } else {
             $request->validate($this->marca->rules(), $this->marca->feedback());
         }
-        
 
-        $marca->update($request->all());
+        if($request->file('imagem')) {
+            Storage::disk('public')->delete($marca->imagem);
+        }
+        
+        $image = $request->file('imagem');
+        $image_urn = $image->store('imagens', 'public');
+
+        $marca->update(
+            [
+                'nome' => $request->nome,
+                'imagem' => $image_urn,
+            ]
+        );
         return $marca;
     }
 
@@ -105,6 +117,7 @@ class MarcaController extends Controller
         if($marca === null) {
             return response()->json(["erro" => "Impossível realizar a exclusão, o recurso infomado não existe!"], 404);
         }
+        Storage::disk('public')->delete($marca->imagem);
         $marca->delete();
         return ['msg'=>'marca removida com sucesso!'];
     }
